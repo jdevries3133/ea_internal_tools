@@ -46,3 +46,37 @@ name.
 
 - Rows:
     - Grouped by "dynamic group" made by script.
+
+# Code to Write
+
+>The actual django stuff that needs to exist
+
+## Models
+
+```
+class UnknownZoomName(models.Model):
+    zoom_name = models.CharField(max_length=50, unique=True, blank=False)
+    real_name = models.CharField(max_length=50, null=True)
+```
+
+## Views
+
+- Landing / file upload
+- FAQ (static)
+- Name matching
+- Download / finished
+
+## Forms
+
+- File form to take csvs
+- Name matching
+
+## Services
+
+- Make any and all calls to teacherHelper module
+
+## Selectors
+
+- Fetch names for the name matcher such that you check the previously matched
+    names for matches.
+

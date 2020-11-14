@@ -1,21 +1,26 @@
-"""ea_django_webapps URL Configuration
-
-The `urlpatterns` list routes URLs to views. For more information please see:
-    https://docs.djangoproject.com/en/3.0/topics/http/urls/
-Examples:
-Function views
-    1. Add an import:  from my_app import views
-    2. Add a URL to urlpatterns:  path('', views.home, name='home')
-Class-based views
-    1. Add an import:  from other_app.views import Home
-    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
-Including another URLconf
-    1. Import the include() function: from django.urls import include, path
-    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
-"""
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
+from django.http import HttpResponse
+
+def home(request):
+    'Luxurious home page'
+    return HttpResponse(
+        """
+        <html>
+            <head></head>
+            <body>
+                <div>
+                    <h1>Zoom Attendance Reporter</h1>
+                    <a href="/zoom-attendance">Click Here</a>
+                </div>
+            </body>
+        </html>
+        """,
+        content_type='text/html'
+    )
 
 urlpatterns = [
+    path('', home),
+    path('zoom-attendance/', include('zoom_attendance_reporter.urls')),
     path('admin/', admin.site.urls),
 ]
