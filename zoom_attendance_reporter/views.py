@@ -1,8 +1,10 @@
 from django import forms
-from django.shortcuts import render
+from django.http import JsonResponse
+from django.shortcuts import render, redirect
 
 from .forms import SmallFilesForm
 from .services import make_meeting_set
+from .selectors import meeting_processing_update
 
 def file_upload(request):
     """
@@ -17,9 +19,11 @@ def file_upload(request):
             meeting_set = make_meeting_set(
                 data=[
                     f for f in request.FILES.getlist('file_field')
-                ]
+                ],
+                user=request.user
             )
-            breakpoint()
+            return redirect('name_match', meeting_set=meeting_set)
+
     form = SmallFilesForm()
     return render(request, 'file_upload.html', {'form': form})
 
@@ -29,7 +33,7 @@ def faq(request):
     """
     pass
 
-def name_match(request):
+def name_match(request, meeting_set):
     """
     User matches whacky zoom names with real names if they can.
     """
@@ -40,3 +44,14 @@ def success(request):
     Allow the user to download their report.
     """
     pass
+
+def ping_process_progress(request):
+    """
+    Provide progress reports on very slow MeetingSet.process() method.
+    """
+    if request.method != 'GET':
+        return JsonResponse({
+            'error': True,
+            'message': f'Method {request.method} not allowed'
+        }, status=403)
+    return JsonResponse(meeting_processing_update())
