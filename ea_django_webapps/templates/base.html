@@ -4,8 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{% block title %}{% endblock %}</title>
+    <style>
+      .errorlist {
+        color: red;
+      }
+    </style>
   </head>
   <body>
+    <h1>Zoom Attendance Report Aggregator</h1>
+    <h3><a href="/faq/">FAQ</a></h3>
+    <h3><a href="/accounts/login/">Login</a></h3>
+    <h3><a href="/register/">Make Account</a></h3>
+    <h3><a href="/zoom-attendance/">Upload Reports</a></h3>
+    <hr />
+    <br />
   {% block content %}{% endblock %}
   </body>
 </html>
