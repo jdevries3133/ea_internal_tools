@@ -12,6 +12,8 @@ Probably will be:
 - Apply middleware
 - Include urls
 - Configure `settings.py`
+    - Setup `EA_AUTHENTICATION`
+    - `AUTH_USER_MODEL = 'authenticate_ea.models.User'`
 
 ## Now, user registration will follow this flow:
 
@@ -52,7 +54,7 @@ which may have the following settings:
 
 | Key                           | Value                                         |
 |-------------------------------|-----------------------------------------------|
-| flow_complete_redirect: str   | Path or view name for redirection             |
+| domain_name: str              | Domain name; necessary for confirmation email |
 | filter_mode: str              | Set mode to `'whitelist'` or `'blacklist'`    |
 | filter_routes: list           | Apply the filter to these routes.             |
 
@@ -67,3 +69,7 @@ an EA verified authenticated user.
 
 In blacklist mode, specify routes the user **CANNOT** visit if they're not an
 authenticated and EA-verified user.
+
+**filter routes**
+
+Regular expressions 

@@ -1,0 +1,19 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Redirecting...{% endblock %}
+
+{% block content %}
+<h1>Thanks!</h1>
+<p>Your account has been created.</p>
+<p>You will need to verify your empacad.org email before you can use this tool</p>
+<p>You will be redirected to gmail now...</p>
+<button onClick="gmailRedirect()">Go there now</button>
+
+<script>
+  function gmailRedirect() {
+    location.replace('https://mail.google.com')
+  }
+  setTimeout(gmailRedirect, 5000)
+</script>
+{% endblock %}

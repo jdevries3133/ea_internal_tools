@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Not Verified{% endblock %}
+
+{% block content %}
+
+<h1>Account not verified</h1>
+<p>
+  You have not yet clicked the email confirmation link sent to {{ email }}.
+  To protect student information, you cannot access this tool until you have
+  verified that you are an EA staff member.
+</p>
+<h3>Would you like to request a new confirmation email?</h3>
+<form action={% url 'not_verified_yet' %} method='post'>
+  {% csrf_token %}
+  <input type="submit" value="Request new confirmation email" />
+</form>
+
+<h3><a href="https://mail.google.com"
+    >Go to Gmail to look for your confirmation email</a></h3>
+
+{% endblock %}

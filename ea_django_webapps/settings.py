@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.0/ref/settings/
 """
 
 import os
+import re
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -50,6 +51,8 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+
+    'authenticate_ea.middleware.EaAuthMiddleware',
 ]
 
 ROOT_URLCONF = 'ea_django_webapps.urls'
@@ -86,6 +89,7 @@ DATABASES = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_FROM = 'jdevries3133@gmail.com'  # temp
 
 # Password validation
 # https://docs.djangoproject.com/en/3.0/ref/settings/#auth-password-validators
@@ -104,6 +108,25 @@ AUTH_PASSWORD_VALIDATORS = [
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
+
+# authenticate_ea settings. Limit resources to EMPACAD staff.
+EA_AUTHENTICATION = {
+    'domain_name': 'localhost:8000',
+    'filter_mode': 'whitelist',
+    'filter_routes': [
+        re.compile(i) for i in [
+            '^/$',
+            '^/zoom-attendance/faq/$',
+            '^/register',
+            '^/accounts',
+            '^/admin',
+        ]
+    ]
+}
+
+LOGIN_REDIRECT_URL = '/zoom-attendance/'
+
+AUTH_USER_MODEL = 'authenticate_ea.User'
 
 
 # Internationalization
