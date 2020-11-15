@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 
 class UnknownZoomName(models.Model):
     zoom_name = models.CharField(max_length=50, unique=True, blank=False)
@@ -14,4 +14,4 @@ class MeetingCompletedReport(models.Model):
     topic = models.CharField(max_length=100)
     meeting_time = models.DateField(auto_now=False, auto_now_add=False)
     created = models.DateTimeField(auto_now=False, auto_now_add=True)
-    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)

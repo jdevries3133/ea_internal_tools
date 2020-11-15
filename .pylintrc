@@ -152,6 +152,7 @@ disable=print-statement,
         logging-not-lazy,
         redifined-outer-name,
         invalid-name,
+        too-few-public-methods,
 
         # project-specific
         not-an-iterable,

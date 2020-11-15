@@ -1,12 +1,12 @@
 from typing import List
 
-from django.contrib.auth.models import User
+from django.contrib.auth import get_user_model
 from teacherHelper.zoom_attendance_report import ExcelWriter, MeetingSet
 
 from .models import MeetingCompletedReport
 
 
-def make_meeting_set(*, data: List[bytes], user: User) -> MeetingSet:
+def make_meeting_set(*, data: List[bytes], user: get_user_model()) -> MeetingSet:
     """
     Instantiate a MeetingSet and save it in request.session. Siphon
     UnknownZoomNames into models.UnknownZoomNames; the user will be

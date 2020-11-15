@@ -32,18 +32,20 @@ def faq(request):
     Provide some additional information.
     """
     pass
+    return JsonResponse({'message': 'faq page in progress'})
 
 def name_match(request, meeting_set):
     """
     User matches whacky zoom names with real names if they can.
     """
     pass
+    return JsonResponse({'message': 'name_match page in progress'})
 
 def success(request):
     """
     Allow the user to download their report.
     """
-    pass
+    return JsonResponse({'message': 'success page in progress'})
 
 def ping_process_progress(request):
     """
@@ -54,4 +56,4 @@ def ping_process_progress(request):
             'error': True,
             'message': f'Method {request.method} not allowed'
         }, status=403)
-    return JsonResponse(meeting_processing_update())
+    return JsonResponse(meeting_processing_update(user=request.user))
