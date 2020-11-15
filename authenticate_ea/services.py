@@ -45,7 +45,6 @@ def validate_email_is_ea(email: str) -> None:
     # check that the domain is correct at all
     eml_domain = email.split('@')[1]
     if eml_domain != 'empacad.org':
-        print('ind')
         raise ValidationError(_("Email address must be an @empacad.org email"))
 
 def assign_user_role_from_slug(*, slug: str) -> User:
