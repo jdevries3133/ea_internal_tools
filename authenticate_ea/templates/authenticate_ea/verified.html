@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Verified!{% endblock %}
+
+{% block content %}
+<h1>Account Verified!</h1>
+{% if request.user.role == request.user.TEACHER %}
+  <p>
+    Your account has been verified! You will be redirected to the attendance
+    report aggregator tool in:
+  </p>
+  <h3 id="verified__countdown">5</h3>
+
+    <script>
+      const countdown = document.getElementById('verified__countdown')
+      for (let i = 1; i < 5; i++) {
+        setTimeout(() => {
+            countdown.innerText = i.toString()
+          },
+          5000 - (i * 1000)
+        )
+      }
+      setTimeout(() => {
+        location.replace('{% url 'file_upload' %}')
+      }, 5000)
+    </script>
+{% endif %}
+
+{% if request.user.role == request.user.STUDENT %}
+  <p>It appears that you are a student!</p>
+  <p>
+    We made that determination based on the fact that the first four characters
+    of your email address ({{ request.user.email }}) are numbers.
+  </p>
+  <p>Better luck next time {{ request.user.username}}!</p>
+{% endif %}
+
+
+{% endblock %}
+

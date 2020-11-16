@@ -3,13 +3,22 @@
 {% block title %}Make an Account{% endblock %}
 
 {% block content %}
+
+
   <h1>Make an Account</h1>
-  <p>You must use an @empacad.org email address.</p>
+  <p>
+    You must use an @empacad.org email address. If you have an account already,
+    <a href={% url 'login' %}>click here to login.</a>
+  </p>
   <p>You will be able to use this tool after verifying your email.</p>
   <br>
+
+
   <form action={{ request.path }} method="POST">
     {% csrf_token %}
     {{ form.as_p }}
   <input type="submit" action="Submit" />
   </form>
+
+
 {% endblock %}

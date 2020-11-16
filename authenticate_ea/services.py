@@ -1,3 +1,4 @@
+import logging
 from smtplib import SMTPException
 
 from django.conf import settings
@@ -7,6 +8,8 @@ from django.utils.translation import gettext_lazy as _
 from django.core.exceptions import ValidationError
 
 from .models import EmailConfirmationToken
+
+logger = logging.getLogger(__name__)
 
 User = get_user_model()
 
@@ -18,24 +21,40 @@ def request_email_verification(*, user: User) -> None:
     email_conf_tok = EmailConfirmationToken.objects.create(
         owner=user,
     )
-    while True:
-        try:
-            send_mail(
-                # subject
-                'Email Confirmation Link for Zoom Report Aggregator',
-                # message
-                'Visit this link to verify your empacad.org email address: '
-                f'https://{settings.EA_AUTHENTICATION.get("domain_name")}/'
-                f'register/verify-ea/{email_conf_tok.token}/',
-                # from
-                settings.EMAIL_FROM,
-                # to
-                [user.email],
-                fail_silently=False
-            )
-            break
-        except SMTPException:
-            print('email failed to send')
+    if not send_mail(
+        # subject
+        'Email Confirmation Link for Zoom Report Aggregator',
+        # message
+        'Visit this link to verify your empacad.org email address: '
+        f'https://{settings.EA_AUTHENTICATION.get("domain_name")}/'
+        f'register/verified/{email_conf_tok.token}/',
+        # from
+        settings.EMAIL_FROM,
+        # to
+        [user.email],
+        fail_silently=True
+    ):
+        logger.error(f'Email to {user.email} failed.')
+
+def is_ea(email: str) -> bool:
+    """
+    Email domain name is "empacad.org"
+    """
+    eml_domain = email.split('@')[1]
+    if eml_domain == 'empacad.org':
+        return True
+    return False
+
+def is_ea_teacher(email: str):
+    """
+    Email domain is "empacad.org" and first four characters of email are not
+    digits.
+
+        (empacad students' emails start with their student ID)
+    """
+    if is_ea(email):
+        return not email[:4].isnumeric()
+    return False
 
 def validate_email_is_ea(email: str) -> None:
     """
@@ -43,9 +62,10 @@ def validate_email_is_ea(email: str) -> None:
     be an @empacad.org email address.
     """
     # check that the domain is correct at all
-    eml_domain = email.split('@')[1]
-    if eml_domain != 'empacad.org':
+    if not is_ea(email):
         raise ValidationError(_("Email address must be an @empacad.org email"))
+    if not is_ea_teacher(email):
+        raise ValidationError(_("This tool is available for teachers only."))
 
 def assign_user_role_from_slug(*, slug: str) -> User:
     """

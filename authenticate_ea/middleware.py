@@ -2,10 +2,14 @@ import re
 
 from django.conf import settings
 from django.contrib import messages
+from django.contrib.auth import get_user_model
 from django.shortcuts import redirect
+
+User = get_user_model()
 
 class EaMiddlewareException(Exception):
     pass
+
 
 class EaAuthMiddleware:
     def __init__(self, get_response):
@@ -37,7 +41,7 @@ class EaAuthMiddleware:
                 'can access this page.'
             )
             return redirect('/register/')
-        if self.user.role != 'teacher':
+        if self.user.role != User.TEACHER:
             messages.add_message(
                 self.request,
                 messages.INFO,
@@ -62,5 +66,4 @@ class EaAuthMiddleware:
         # there was no match.
             # no need to check if it's a blacklist
             # do need to check if it's a whitelist.
-        return False if self.filter_mode == 'blacklist' else True
-
+        return self.filter_mode == 'whitelist'

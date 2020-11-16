@@ -5,15 +5,25 @@
 
 {% block content %}
 <h1>Thanks!</h1>
-<p>Your account has been created.</p>
+{% if request.session.user_is_new %}
+  <p>Your account has been created!</p>
+{% endif %}
 <p>You will need to verify your empacad.org email before you can use this tool</p>
-<p>You will be redirected to gmail now...</p>
+<p>You will be redirected to gmail in <span id="pre_redirect__countdown">5</span></p>
 <button onClick="gmailRedirect()">Go there now</button>
 
 <script>
-  function gmailRedirect() {
-    location.replace('https://mail.google.com')
+  const countdown = document.getElementById('pre_redirect__countdown')
+  for (let i = 1; i < 5; i++) {
+    setTimeout(() => {
+        countdown.innerText = i.toString()
+      },
+      5000 - (i * 1000)
+    )
   }
-  setTimeout(gmailRedirect, 5000)
+  setTimeout(() => {
+    location.replace('https://mail.google.com/')
+  }, 5000)
+
 </script>
 {% endblock %}

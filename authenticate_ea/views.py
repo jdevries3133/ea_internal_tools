@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, logout
 from django.core.validators import EmailValidator
 from django.contrib.auth.forms import UserCreationForm
 from django.shortcuts import render, redirect
@@ -36,6 +36,7 @@ def register(request):
             # save and send verification email.
             user = form.save()
             request_email_verification(user=user)
+            request.session['user_is_new'] = True
             return redirect('gmail_redirect')
         # else, render form again, this time with validation errors.
         return render(
@@ -47,16 +48,14 @@ def register(request):
     form = RegisterForm()
     return render(request, 'authenticate_ea/register.html', context={'form': form})
 
-def verify_ea(request, slug):
+def verified(request, slug):
     """
     User verifies that they have an empowerment academy email address by
     clicking on the link sent to their email.
     """
     user = assign_user_role_from_slug(slug=slug)
     login(request, user)
-    return render(request, 'authenticate_ea/verify_ea.html', context={
-        'redirect_url': settings.LOGIN_REDIRECT_URL
-    })
+    return render(request, 'authenticate_ea/verified.html')
 
 def gmail_redirect(request):
     """
@@ -79,7 +78,5 @@ def not_verified_yet(request):
             'New confirmation email has been sent'
         )
         return redirect('gmail_redirect')
-        breakpoint()
-    return render(request, 'authenticate_ea/unverified.html', context={
-        'email': request.user.email
-    })
+    return render(request, 'authenticate_ea/unverified.html')
+
