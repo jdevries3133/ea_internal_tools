@@ -7,7 +7,11 @@
 <div>
   <h1>Upload your Zoom Attendance Reports</h1>
   <p style="font-size: 14px"><i>Welcome to the internet: circa 1998</i></p>
-  <a href="https://blogs.otago.ac.nz/zoom/zoom-host-tips/how-to-access-zoom-usage-reports/">Click here to learn how to download your zoom attendance reports.</a>
+  <a 
+    href="https://blogs.otago.ac.nz/zoom/zoom-host-tips/how-to-access-zoom-usage-reports/"
+    target="_blank"
+    rel="noopener"
+  >Click here to learn how to download your zoom attendance reports.</a>
   <hr />
   <div style="padding-left: 50px; padding-bottom: 50px; background-color: #ffabab">
     <h2 style="padding-top: 100px;">Check these boxes always</h2>
@@ -22,13 +26,12 @@
   </div>
   <hr />
   <h3>Upload your CSV Files here:</h3>
-  <p>You can and should upload them all at once</p>
+  <p>You must upload them all at once.</p>
+  <p>First download them all, then upload them all in one shot.</p>
   <br />
   <form action="{{ request.path }}" method="post" enctype="multipart/form-data">
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" value="Submit">
   </form>
-
-
 {% endblock %}

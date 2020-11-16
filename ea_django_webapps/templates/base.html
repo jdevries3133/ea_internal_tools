@@ -12,9 +12,10 @@
   </head>
   <body>
     <h1>Zoom Attendance Report Aggregator</h1>
-    <h3><a href="{% url 'faq' %}">FAQ</a></h3>
     <h3><a href="{% url 'login' %}">Login</a></h3>
+    <h3><a href="{% url 'logout' %}">Log Out</a></h3>
     <h3><a href="{% url 'register' %}">Make Account</a></h3>
+    <h3><a href="{% url 'faq' %}">FAQ</a></h3>
     <h3><a href="{% url 'file_upload' %}">Upload Reports</a></h3>
     {% if messages %}
       <h2 style="color: blue;">Messages!</h2>

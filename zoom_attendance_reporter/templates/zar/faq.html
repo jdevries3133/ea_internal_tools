@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ{% endblock %}
+
+{% block content %}
+
+<div style="display: inline-block; max-width: 700px; margin-left: 5%;">
+
+  <h1>FAQ</h1>
+
+  <h3>What does it do?</h3>
+  <p>
+    This is a tool for aggregating your zoom attendance reports into a single
+    report that is actually useful to you. If you didn't already know, you
+    can export a report of the "usage," from your zoom meetings (aka who
+    attended and for how long). That's pretty nifty, but who really wants
+    to sort through all that data, filter out students' weird inaccurate zoom
+    names, and compile a longitudinal report of students' attendance over time?
+  </p>
+  <p>
+    This website, that's who.
+  </p>
+
+
+  <h3>What does "the report" look like</h3>
+  <p>
+    <a 
+     href="{% url 'download_sample_report' %}"
+     download="SampleReport.xlsx"
+     >Here is a sample report</a>
+    That I generated with my own meet data this year so far.
+  </p>
+
+
+  <h3>Who made this?</h3>
+  <p>
+    I made this! I'm Jack DeVries, I am the music teacher at UES, and
+    computer programming is my hobby. My job is just too fun, I had to choose
+    a boring hobby – that's the rule.
+  </p>
+
+  <h3>How does this work?</h3>
+  <p>
+    There are a lot of layers to the onion, but basically I wrote a bunch of
+    code and somehow now it works (maybe)
+  </p>
+  <p>
+    For the curious among us, code for the website is
+    <a
+      href="https://github.com/jdevries3133/ea_internal_tools"
+      >here</a>
+    , and the report generator is
+    <a 
+      href="https://github.com/jdevries3133/teacher-helper/blob/master/teacherHelper/zoom_attendance_report.py"
+      >here.</a>
+  </p>
+
+
+  <h3>Will this work for LES?</h3>
+  <p>
+    Not currently because I personally don't have access to student data for
+    LES since I am a UES teacher, but if somebody wants to give me access,
+    I can easily make it work for LES later.
+  </p>
+
+
+  <h3>Will this work if I use the same meet topic for all my Zooms?</h3>
+  <p>
+    Yes! That is actually where this tool shines the most. If you are a teacher
+    who has been using the same meet topic to meet with different groups of
+    students, it would be a nightmare for you to try to disaggregate all
+    your meet reports from zoom and make any use out of them. This tool can
+    actually dynamically group meetings based on the overlap of students
+    between different meeting instances.
+  </p>
+  <p>
+    In plainer terms, that means that if you used the meet topic "Smith Music"
+    to meet with every homeroom in every grade, this tool will group together
+    each homeroom and print them separately on the final report.
+  </p>
+
+
+  <h3>Will this work if my students use incorrect names in Zoom?</h3>
+  <p>
+    Yes! Again, this is one of the intended use cases of this tool. It will
+    agressively try to match the student's zoom name with the student's
+    real profile. First it will try an exact full name match. If that fails,
+    it performs an approximate name match. If that fails to return a
+    sufficiently confdent match, it will try to match the first name to a
+    first name in the group it presumes to currently be looking at.
+  </p>
+  <p>
+    <i>
+      For example, if all the attendees of the meeting currently being parsed
+      are in Mrs. Smith's homeroom and we encounter a student named "Jimmy
+      Fortnite Rules Forever," The program will first break that atrocious
+      name into four separate parts:
+      <code>['Jimmy', 'Fortnite'...].</code>
+      Then, it will try to find a first-name-match within Mrs. Smith's
+      homeroom for each word. If there is only one "Jimmy" in Mrs. Smith's
+      homeroom, we have a match.
+    </i>
+  </p>
+  <p>
+    <b>
+      Suffice it to say, the script will match almost any name that a human
+      could have.
+    </b>
+    Key word "almost." After all is said and done, you will be brought to a
+    skippable screen where you can manually match any stragglers. The
+    system also gets smarter over time, so the straggler-to-name conversion
+    that you input is saved and potentially used by the next person so they
+    don't have to do as much manual matching.
+  </p>
+
+
+  <h3>Ph</h3>
+  <p>
+    ph
+  </p>
+
+
+  <h3>Ph</h3>
+  <p>
+    ph
+  </p>
+
+
+  <h3>Is this Safe?</h3>
+  <p>
+    Despite this website looking like it's from 1993, the appearance of a
+    website is not necessarily related to it's security. I used a
+    <a
+      href="https://docs.djangoproject.com/en/3.1/topics/security/"
+      >web framework</a>
+    that includes all of the security features of any modern website. Cross
+    site scripting protection, cross site request forgery tokens, SQL injection
+    protection, clickjacking protection, encryption, password hashing, and more
+    are all implemented here.
+  </p>
+  <p>
+    Plus, you cannot make an account or do anything here unless you have been
+    verified to have access to an @empacad.org email address, and no, students
+    cannot gain access with their accounts either.
+  </p>
+
+
+
+</div>
+
+
+{% endblock %}

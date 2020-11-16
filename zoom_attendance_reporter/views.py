@@ -1,5 +1,5 @@
 from django import forms
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 
 from .forms import SmallFilesForm
@@ -25,20 +25,18 @@ def file_upload(request):
             return redirect('name_match', meeting_set=meeting_set)
 
     form = SmallFilesForm()
-    return render(request, 'file_upload.html', {'form': form})
+    return render(request, 'zar/file_upload.html', {'form': form})
 
 def faq(request):
     """
     Provide some additional information.
     """
-    pass
-    return JsonResponse({'message': 'faq page in progress'})
+    return render(request, 'zar/faq.html')
 
 def name_match(request, meeting_set):
     """
     User matches whacky zoom names with real names if they can.
     """
-    pass
     return JsonResponse({'message': 'name_match page in progress'})
 
 def success(request):
@@ -51,9 +49,10 @@ def ping_process_progress(request):
     """
     Provide progress reports on very slow MeetingSet.process() method.
     """
-    if request.method != 'GET':
-        return JsonResponse({
-            'error': True,
-            'message': f'Method {request.method} not allowed'
-        }, status=403)
     return JsonResponse(meeting_processing_update(user=request.user))
+
+def download_sample_report(request):
+    """
+    Sample report in site header and FAQ
+    """
+    return HttpResponse('placeholder', content_type='text/plain')
