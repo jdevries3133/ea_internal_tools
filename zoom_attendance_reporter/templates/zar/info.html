@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load static %}
 
 {% block title %}FAQ{% endblock %}
 
@@ -6,7 +7,9 @@
 
 <div style="display: inline-block; max-width: 700px; margin-left: 5%;">
 
-  <h1>FAQ</h1>
+  <h1>Home</h1>
+
+  <h2>Zoom Attendance Report Aggregator</h2>
 
   <h3>What does it do?</h3>
   <p>
@@ -22,15 +25,31 @@
   </p>
 
 
-  <h3>What does "the report" look like</h3>
+  <h3>What does "the report" look like?</h3>
   <p>
     <a 
-     href="{% url 'download_sample_report' %}"
+     href="{% static 'zar/sample-report.xlsx' %}"
      download="SampleReport.xlsx"
      >Here is a sample report</a>
-    That I generated with my own meet data this year so far.
+    that I generated with my own meet data this year so far.
   </p>
 
+  <h3>How can I use this if I don't have excel?</h3>
+  <p>
+    Excel is not installed on anyone's work computer, but you can upload
+    the excel file this website gives you to google drive and view it there
+    instead.
+    <a
+      href='https://drive.google.com/file/d/11na8GEQw9kDbPlH0SfWzV7pk8VF7RmLC/view?usp=sharing'
+      >This</a>
+    is what the report looks like in google sheets.
+  </p>
+  <p>
+    <i>
+      Note that you must be logged in to your empacad.org account to view this
+      google sheet.
+    </i>
+  </p>
 
   <h3>Who made this?</h3>
   <p>
@@ -38,23 +57,6 @@
     computer programming is my hobby. My job is just too fun, I had to choose
     a boring hobby – that's the rule.
   </p>
-
-  <h3>How does this work?</h3>
-  <p>
-    There are a lot of layers to the onion, but basically I wrote a bunch of
-    code and somehow now it works (maybe)
-  </p>
-  <p>
-    For the curious among us, code for the website is
-    <a
-      href="https://github.com/jdevries3133/ea_internal_tools"
-      >here</a>
-    , and the report generator is
-    <a 
-      href="https://github.com/jdevries3133/teacher-helper/blob/master/teacherHelper/zoom_attendance_report.py"
-      >here.</a>
-  </p>
-
 
   <h3>Will this work for LES?</h3>
   <p>
@@ -114,25 +116,12 @@
   </p>
 
 
-  <h3>Ph</h3>
-  <p>
-    ph
-  </p>
-
-
-  <h3>Ph</h3>
-  <p>
-    ph
-  </p>
-
-
   <h3>Is this Safe?</h3>
   <p>
-    Despite this website looking like it's from 1993, the appearance of a
-    website is not necessarily related to it's security. I used a
+    I used a
     <a
       href="https://docs.djangoproject.com/en/3.1/topics/security/"
-      >web framework</a>
+      >web framework called Django</a>
     that includes all of the security features of any modern website. Cross
     site scripting protection, cross site request forgery tokens, SQL injection
     protection, clickjacking protection, encryption, password hashing, and more
@@ -143,6 +132,23 @@
     verified to have access to an @empacad.org email address, and no, students
     cannot gain access with their accounts either.
   </p>
+
+
+  <h3>How does this work?</h3>
+  <p>
+    You haven't used it yet, maybe it doesn't...
+  </p>
+  <p>
+    For the curious among us, code for the website is
+    <a
+      href="https://github.com/jdevries3133/ea_internal_tools"
+      >here</a>
+    , and the report generator is
+    <a 
+      href="https://github.com/jdevries3133/teacher-helper/blob/master/teacherHelper/zoom_attendance_report.py"
+      >here.</a>
+  </p>
+
 
 
 

@@ -3,7 +3,7 @@ from typing import List
 from django.contrib.auth import get_user_model
 from teacherHelper.zoom_attendance_report import WorkbookWriter, MeetingSet
 
-from .models import MeetingCompletedReport
+from .models import MeetingCompletedReport, MeetingSetModel
 
 
 def make_meeting_set(*, data: List[bytes], user: get_user_model()) -> MeetingSet:
@@ -18,15 +18,23 @@ def make_meeting_set(*, data: List[bytes], user: get_user_model()) -> MeetingSet
     meeting_set = MeetingSet(data := [str(f.read(), 'utf-8-sig') for f in data])
 
     # MeetingCompletedReport provides progress to the frontend.
-    # Won't work on dev server because it can't handle concurrent request.
+    # Won't work on dev server because it can't handle concurrent requests.
     for meeting in meeting_set.process():
         MeetingCompletedReport.objects.create(
+            owner=user,
             topic=meeting.topic,
             meeting_time=meeting.datetime.date()
         )
 
+    serializable = meeting_set.get_serializable_data()
 
-    # delete all MeetingCompletedReport objects once processing is finished
-    # user will only be fetching them to get updates on processing progress.
+    # store processed meetingset in the database for misc future use
+    MeetingSetModel.objects.create(
+        owner=user,
+        json=serializable
+    )
+
+    # delete all MeetingCompletedReport objects. They are only used so that
+    # the frontend can request updates during processing.
     MeetingCompletedReport.objects.filter(owner=user).delete()
     return meeting_set

@@ -1,8 +1,9 @@
-from django import forms
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
+from django import forms
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext as _
 
-from .forms import SmallFilesForm
 from .services import make_meeting_set
 from .selectors import meeting_processing_update
 
@@ -10,6 +11,26 @@ def file_upload(request):
     """
     Upload csv files.
     """
+    class SmallFilesForm(forms.Form):
+
+        file_field = forms.FileField(widget=forms.ClearableFileInput(attrs={
+            'multiple': True
+        }))
+
+        def __init__(self, *a, **kw):
+            # easier to grab raw files before super()
+            self.all_files = kw.pop('all_files', [])
+            super().__init__(*a, **kw)
+
+        def clean(self):
+            super().clean()
+            for file in self.all_files:
+                if file.size > 1e6:  # 1 mb
+                    raise ValidationError(
+                        _('CSV should not be larger than 1mb'),
+                        code='invalid'
+                    )
+
     if request.method == 'POST':
         form = SmallFilesForm(
             request.POST,
@@ -17,21 +38,13 @@ def file_upload(request):
         )
         if form.is_valid():
             meeting_set = make_meeting_set(
-                data=[
-                    f for f in request.FILES.getlist('file_field')
-                ],
+                data=request.FILES.getlist('file_field'),
                 user=request.user
             )
             return redirect('name_match', meeting_set=meeting_set)
 
     form = SmallFilesForm()
     return render(request, 'zar/file_upload.html', {'form': form})
-
-def faq(request):
-    """
-    Provide some additional information.
-    """
-    return render(request, 'zar/faq.html')
 
 def name_match(request, meeting_set):
     """

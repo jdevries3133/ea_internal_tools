@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>{% block title %}{% endblock %}</title>
     <style>
+      html {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+      }
       .errorlist {
         color: red;
       }
@@ -15,7 +18,6 @@
     <h3><a href="{% url 'login' %}">Login</a></h3>
     <h3><a href="{% url 'logout' %}">Log Out</a></h3>
     <h3><a href="{% url 'register' %}">Make Account</a></h3>
-    <h3><a href="{% url 'faq' %}">FAQ</a></h3>
     <h3><a href="{% url 'file_upload' %}">Upload Reports</a></h3>
     {% if messages %}
       <h2 style="color: blue;">Messages!</h2>

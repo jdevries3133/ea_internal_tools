@@ -5,4 +5,4 @@ def home(request):
     """
     Luxurious home page
     """
-    return render(request, 'home/home.html')
+    return render(request, 'zar/info.html', context={'title': 'Home'})
