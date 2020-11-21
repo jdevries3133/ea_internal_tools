@@ -6,11 +6,16 @@ from teacherHelper.zoom_attendance_report import WorkbookWriter, MeetingSet
 from .models import MeetingCompletedReport, MeetingSetModel
 
 
-def make_meeting_set(*, data: List[bytes], user: get_user_model()) -> MeetingSet:
+def make_meeting_set(*,
+                     data: List[bytes],
+                     user,
+                     request) -> list:
     """
-    Instantiate a MeetingSet and save it in request.session. Siphon
-    UnknownZoomNames into models.UnknownZoomNames; the user will be
-    redirected to a matching view next.
+    Create a database, store it in the request session.
+
+    Session is stored in the database too, but hopefully this raw meetingset
+    will be updated after name matching, so we also store the id in the session
+    so that we can come back and update the model after name matching.
 
     Note: form has validated that no file is greater than 1 mb, so file.read()
     is safe.
@@ -27,14 +32,16 @@ def make_meeting_set(*, data: List[bytes], user: get_user_model()) -> MeetingSet
         )
 
     serializable = meeting_set.get_serializable_data()
-
-    # store processed meetingset in the database for misc future use
-    MeetingSetModel.objects.create(
+    temp_meeting_set_model = MeetingSetModel.objects.create(
         owner=user,
         json=serializable
     )
 
+    request.session['temp_meeting_set_model'] = temp_meeting_set_model.id
+    request.session['meeting_set'] = serializable
+    request.session['unknown_names'] = meeting_set.unidentifiable
+
     # delete all MeetingCompletedReport objects. They are only used so that
     # the frontend can request updates during processing.
     MeetingCompletedReport.objects.filter(owner=user).delete()
-    return meeting_set
+    return serializable

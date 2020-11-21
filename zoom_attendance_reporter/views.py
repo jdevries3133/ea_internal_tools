@@ -39,18 +39,29 @@ def file_upload(request):
         if form.is_valid():
             meeting_set = make_meeting_set(
                 data=request.FILES.getlist('file_field'),
-                user=request.user
+                user=request.user,
+                request=request
             )
             return redirect('name_match', meeting_set=meeting_set)
 
     form = SmallFilesForm()
     return render(request, 'zar/file_upload.html', {'form': form})
 
-def name_match(request, meeting_set):
+def name_match(request):
     """
     User matches whacky zoom names with real names if they can.
     """
-    return JsonResponse({'message': 'name_match page in progress'})
+    class NameMatch(forms.Form):
+        # TODO: make form
+        pass
+
+    if request.method == 'POST':
+        # TODO: update with matches
+        # TODO: generate report
+        pass
+    unidentifiable = request.session.get('unidentifiable')
+    # TODO: render match form
+    return render(request, 'zar/name_match.html')
 
 def success(request):
     """

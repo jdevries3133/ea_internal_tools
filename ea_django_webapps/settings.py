@@ -119,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-# authenticate_ea settings. Limit resources to EMPACAD staff.
+# Limit resources to EMPACAD staff. Protect all routes not whitelisted.
 EA_AUTHENTICATION = {
     'domain_name': 'localhost:8000',
     'filter_mode': 'whitelist',
@@ -139,8 +139,7 @@ LOGIN_REDIRECT_URL = '/zoom-attendance/'
 AUTH_USER_MODEL = 'authenticate_ea.User'
 
 
-# Internationalization
-# https://docs.djangoproject.com/en/3.0/topics/i18n/
+
 
 LANGUAGE_CODE = 'en-us'
 
@@ -153,8 +152,39 @@ USE_L10N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/3.0/howto/static-files/
+
 
 STATIC_URL = '/static/'
 
+
+
+
+LOGGING = {
+    'version': 1,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'level': 'INFO'
+        },
+        'file': {
+            'class': 'logging.FileHandler',
+            'level': 'DEBUG',
+            'filename': 'debug.log'
+        }
+    },
+    'loggers': {
+        'root': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+        },
+        'teacherHelper.zoom_attendance_reporter': {
+            'handlers': ['console'],
+            'level': 'INFO',
+        },
+        'django': {
+            'handlers': ['console', 'file'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}
