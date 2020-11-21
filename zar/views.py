@@ -1,3 +1,5 @@
+import logging
+
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django import forms
@@ -6,6 +8,8 @@ from django.utils.translation import gettext as _
 
 from .services import make_meeting_set
 from .selectors import meeting_processing_update
+
+logger = logging.getLogger(__name__)
 
 def file_upload(request):
     """

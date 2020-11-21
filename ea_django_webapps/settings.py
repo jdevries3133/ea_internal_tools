@@ -158,31 +158,41 @@ STATIC_URL = '/static/'
 
 
 
+FORMATTERS = {
+    'debug': '%(pathname)s:%(funcName)s:%(lineno)s:\n:%(message)s',
+    'prod': '%(levelname)s %(asctime)s %(name)s.%(funcName)s:%(lineno)s- %(message)s'
+}
+
+formatter = FORMATTERS['debug'] if DEBUG else FORMATTERS['prod']
 
 LOGGING = {
     'version': 1,
+    'formatters': {
+        'debug': {
+            'format': '%(pathname)s:%(funcName)s:%(lineno)s\n->\t%(message)s',
+        },
+        'production': {
+            'format': '%(levelname)s %(asctime)s %(name)s.%(funcName)s:%(lineno)s- %(message)s'
+        },
+    },
     'handlers': {
         'console': {
             'class': 'logging.StreamHandler',
-            'level': 'INFO'
-        },
-        'file': {
-            'class': 'logging.FileHandler',
             'level': 'DEBUG',
-            'filename': 'debug.log'
-        }
+            'formatter': 'debug'
+        },
     },
     'loggers': {
         'root': {
             'handlers': ['console'],
-            'level': 'DEBUG',
+            'level': 'ERROR',
         },
         'teacherHelper.zoom_attendance_reporter': {
             'handlers': ['console'],
             'level': 'ERROR',
         },
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': True,
         },

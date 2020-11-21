@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from django.contrib.auth import get_user_model
@@ -5,6 +6,7 @@ from teacherHelper.zoom_attendance_report import WorkbookWriter, MeetingSet
 
 from .models import MeetingCompletedReport, MeetingSetModel
 
+logger = logging.getLogger(__name__)
 
 def make_meeting_set(*,
                      data: List[bytes],
@@ -25,11 +27,14 @@ def make_meeting_set(*,
     # MeetingCompletedReport provides progress to the frontend.
     # Won't work on dev server because it can't handle concurrent requests.
     for meeting in meeting_set.process():
+        logger.debug(f'Processed {meeting}')
         MeetingCompletedReport.objects.create(
             owner=user,
             topic=meeting.topic,
             meeting_time=meeting.datetime.date()
         )
+
+    logger.info(f'Finished processing meetingset for {user.email}')
 
     serializable = meeting_set.get_serializable_data()
     temp_meeting_set_model = MeetingSetModel.objects.create(
