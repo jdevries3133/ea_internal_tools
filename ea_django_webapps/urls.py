@@ -6,7 +6,7 @@ from .views import home
 
 urlpatterns = [
     path('', home),
-    path('zoom-attendance/', include('zoom_attendance_reporter.urls')),
+    path('zoom-attendance/', include('zar.urls')),
     path('accounts/', include('django.contrib.auth.urls')),
     path('register/', include('authenticate_ea.urls')),
     path('admin/', admin.site.urls),

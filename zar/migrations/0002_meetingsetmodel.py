@@ -10,7 +10,7 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('zoom_attendance_reporter', '0001_initial'),
+        ('zar', '0001_initial'),
     ]
 
     operations = [

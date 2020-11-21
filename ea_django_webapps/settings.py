@@ -31,7 +31,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 
     'authenticate_ea',
-    'zoom_attendance_reporter'
+    'zar'  # zoom attendance reporter
 ]
 
 MIDDLEWARE = [
@@ -175,16 +175,20 @@ LOGGING = {
     'loggers': {
         'root': {
             'handlers': ['console'],
-            'level': 'WARNING',
+            'level': 'DEBUG',
         },
         'teacherHelper.zoom_attendance_reporter': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'ERROR',
         },
         'django': {
             'handlers': ['console', 'file'],
-            'level': 'DEBUG',
+            'level': 'ERROR',
             'propagate': True,
         },
+        'zar': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        }
     },
 }
