@@ -33,6 +33,9 @@ class EaAuthMiddleware:
         Check if the user is a teacher. If they are not, redirect them to the
         not_validated_yet view.
         """
+        # just let superusers through
+        if self.user.is_superuser:
+            return self.get_response(self.request)
         if not self.user.is_authenticated:
             messages.add_message(
                 self.request,
