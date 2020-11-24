@@ -1,52 +1,58 @@
 import logging
 from typing import List
 
-from django.contrib.auth import get_user_model
-from teacherHelper.zoom_attendance_report import WorkbookWriter, MeetingSet
+from teacherHelper.zoom_attendance_report import MeetingSet
 
-from .models import MeetingCompletedReport, MeetingSetModel
+from .models import MeetingCompletedReport, MeetingSetModel, RawMeetingData
 
 logger = logging.getLogger(__name__)
 
-def make_meeting_set(*,
+def queue_meeting_set(*,
                      data: List[bytes],
                      user,
-                     request) -> list:
+                     request) -> None:
     """
-    Create a database, store it in the request session.
-
-    Session is stored in the database too, but hopefully this raw meetingset
-    will be updated after name matching, so we also store the id in the session
-    so that we can come back and update the model after name matching.
-
-    Note: form has validated that no file is greater than 1 mb, so file.read()
-    is safe.
+    Save raw data, and create an empty MeetingSetModel to signal to the
+    worker that it has a MeetingSet to process.
     """
-    meeting_set = MeetingSet(data := [str(f.read(), 'utf-8-sig') for f in data])
-
-    # MeetingCompletedReport provides progress to the frontend.
-    # Won't work on dev server because it can't handle concurrent requests.
-    for meeting in meeting_set.process():
-        logger.debug(f'Processed {meeting}')
-        MeetingCompletedReport.objects.create(
-            owner=user,
-            topic=meeting.topic,
-            meeting_time=meeting.datetime.date()
+    if MeetingSetModel.objects.filter(owner=user, is_processed=False):
+        raise Exception(
+            f'{user.email} is creating a new MeetingSet despite already having '
+            'a MeetingSet in progress.'
         )
+    meeting_set_model = MeetingSetModel.objects.create(owner=user)
+    RawMeetingData.objects.bulk_create([
+        RawMeetingData(
+            meeting_set_model=meeting_set_model,
+            data=str(f.read(), 'utf-8-sig'),
+        ) for f in data
+    ])
 
-    logger.info(f'Finished processing meetingset for {user.email}')
+def process_meeting_set(*,
+                        meeting_set_model: MeetingSetModel,
+                        data: List[str]) -> None:
+    """
+    Take an unprocessed MeetingSet and process it! Will be run by a worker
+    separate from the web application.
+    """
+    # initialize MeetingSet
+    meeting_set = MeetingSet(data)
 
-    serializable = meeting_set.get_serializable_data()
-    temp_meeting_set_model = MeetingSetModel.objects.create(
-        owner=user,
-        json=serializable
-    )
+    # process all data, create progress reports during processing.
+    for meeting in meeting_set.process():
+        report = MeetingCompletedReport.objects.create(
+            topic=meeting.topic,
+            meeting_time=meeting.datetime.date(),
+            meeting_set_model=meeting_set_model,
+        )
+        logger.debug(f'CompletedReport for {report}')
 
-    request.session['temp_meeting_set_model'] = temp_meeting_set_model.id
-    request.session['meeting_set'] = serializable
-    request.session['unknown_names'] = meeting_set.unidentifiable
+    # update meeting_set_model now that processing is finished.
+    meeting_set_model.json = meeting_set.get_serializable_data()
+    meeting_set_model.is_processed = True
+    meeting_set_model.save()
 
-    # delete all MeetingCompletedReport objects. They are only used so that
-    # the frontend can request updates during processing.
-    MeetingCompletedReport.objects.filter(owner=user).delete()
-    return serializable
+    # cleanup; delete reports now that processing is done
+    MeetingCompletedReport.objects.filter(
+        meeting_set_model=meeting_set_model
+    ).delete()

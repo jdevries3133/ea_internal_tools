@@ -169,7 +169,7 @@ LOGGING = {
     'version': 1,
     'formatters': {
         'debug': {
-            'format': '%(pathname)s:%(funcName)s:%(lineno)s\n->\t%(message)s',
+            'format': '%(pathname)s:%(funcName)s:%(lineno)s\n->\t%(message)s\n',
         },
         'production': {
             'format': '%(levelname)s %(asctime)s %(name)s.%(funcName)s:%(lineno)s- %(message)s'
@@ -189,16 +189,20 @@ LOGGING = {
         },
         'teacherHelper.zoom_attendance_reporter': {
             'handlers': ['console'],
-            'level': 'ERROR',
+            'level': 'INFO',
         },
         'django': {
             'handlers': ['console'],
-            'level': 'ERROR',
+            'level': 'INFO',
             'propagate': True,
         },
         'zar': {
             'handlers': ['console'],
             'level': 'DEBUG',
-        }
+        },
+        '__main__': {  # ends up being relevant for debugging zar.tasks
+            'handlers': ['console'],
+            'level': 'DEBUG'
+        },
     },
 }

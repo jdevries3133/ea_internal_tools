@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block title %}Your Report is Processing{% endblock %}
+
+{% block content %}
+
+<div>
+  <h1>Report is Processing</h1>
+
+
+  {% if len_queue != 0 %}
+
+    <p>
+      Connecting the names each student uses on zoom with their real names
+      is quite slow! There are currently {{ len_queue }} meetings in the queue.
+      Feel free to close this window and come back later to download your
+      report, or if you stay on this page, it will keep updating automatically.
+    </p>
+    <script>
+      // refresh every 5 seconds.
+      setTimeout (() => {
+        location.replace(window.location)
+      }, 5000)
+    </script>
+
+
+  {% else %}
+
+    <h2>Your report is being processed now!</h2>
+    <h3>Meetings processed:</h3>
+    <h1>{{ len_queue }}</h1>
+    <ul>
+      {% for meet in processed_meeting_names %}
+        <li>{{ meet }}</li>
+      {% endfor %}
+    </ul>
+
+  <script>
+    // refresh every 1 second
+    setTimeout(() => {
+      location.replace(window.location)
+    }, 1000)
+  </script>
+
+  {% endif %}
+
+</div>
+
+{% endblock %}

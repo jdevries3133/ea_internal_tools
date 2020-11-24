@@ -25,58 +25,27 @@
 Let the users generate a library of whacky zoom names mapped to their real
 name.
 
-**Flow**
 
-1. User submits uploaded galleries.
-2. Backend parses all.
-3. An instance of UnknownZoomName model is saved to the database with the
-    real_name field blank.
-4. User 
+## TODO
 
-## The excel report
+[x] Cleanup garbage code
+[x] User submits data
+[x] Data stored in DB
+[x] Initialize empty, unprocessed MeetingSetModel
+[x] Worker processes model
 
->These notes more apply for code that will go in the teacherHelper module, but
->that is yet unfinished so here goes:
+Meanhwile,
 
-**Sheet 1**
+*should work, need to test*
 
-- Columns:
-    - Student Name
-    - 
+[ ] Update meeting_progress_report page logic.  TODO NEXT
 
-- Rows:
-    - Grouped by "dynamic group" made by script.
+[x] User is on progress_monitor page if they have a pending MeetingSet
 
-# Code to Write
+*TODO next*
+[ ] User can cancel the meetingset from there.
 
->The actual django stuff that needs to exist
 
-## Models
+## After the above is done
 
-```
-class UnknownZoomName(models.Model):
-    zoom_name = models.CharField(max_length=50, unique=True, blank=False)
-    real_name = models.CharField(max_length=50, null=True)
-```
-
-## Views
-
-- Landing / file upload
-- FAQ (static)
-- Name matching
-- Download / finished
-
-## Forms
-
-- File form to take csvs
-- Name matching
-
-## Services
-
-- Make any and all calls to teacherHelper module
-
-## Selectors
-
-- Fetch names for the name matcher such that you check the previously matched
-    names for matches.
-
+Implement the name matching page.
