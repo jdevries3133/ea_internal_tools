@@ -6,11 +6,6 @@ from django_mysql.models import JSONField
 class UnknownZoomName(models.Model):
     zoom_name = models.CharField(max_length=50, unique=True, null=False)
     real_name = models.CharField(max_length=50, null=False)
-    meeting_set_model = models.ForeignKey(
-        'zar.MeetingSetModel',
-        on_delete=models.CASCADE,
-        related_name='unknown_names',
-    )
 
 class MeetingCompletedReport(models.Model):
     """
@@ -28,7 +23,7 @@ class MeetingCompletedReport(models.Model):
     )
 
     def __str__(self):
-        return self.topic + ' on ' + self.created.strftime('%m/%d/%y')
+        return self.topic + ' on ' + self.meeting_time.strftime('%m/%d/%y')
 
 class MeetingSetModel(models.Model):
     """
@@ -38,6 +33,7 @@ class MeetingSetModel(models.Model):
     owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
     json = JSONField()
     is_processed = models.BooleanField(default=False)
+    needs_name_matching = models.BooleanField(default=True)
     created = models.DateTimeField(auto_now=False, auto_now_add=True)
 
 class RawMeetingData(models.Model):

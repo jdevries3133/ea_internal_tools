@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+
+{% comment %}
+  If the user tries to reach a page in the meeting processing flow, but they
+  have no currently processing meeting, they will need to be informed of that
+  information, and be given the opportunity to either download previous
+  reports, or create a new one.
+{% endcomment %}
+
+{% block title %}No Meetings Are Currently Being Processed{% endblock %}
+
+{% block content %}
+
+<h1>No Meetings Are Currently Being Processed</h1>
+
+<p>
+  You tried to reach a page that is part of processing a report. However,
+  you don't currently have any reports in progress.
+</p>
+<h3><a href={% url 'file_upload' %}>Click here to make a new report</a></h3>
+<h3><a href={% url 'download_previous' %}>Click here to download a previously created report.</a></h3>
+
+{% endblock %}

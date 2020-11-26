@@ -19,23 +19,36 @@ def meeting_processing_update(*, meeting: MeetingSetModel) -> dict:
         )
     else:
         processed = []
-    # meeting_processing_health_check()
+    if num_ahead > 10:
+        logger.critical(
+            'There is a queue of more than 10 meetings. This indicates that '
+            'the meeting processor may have crashed'
+        )
     return {
         'len_queue': num_ahead,
         'processed_meeting_names': [str(m) for m in processed]
     }
 
+def user_has_pending_meeting(*, user):
+    """
+    Return meeting in progress, or false if there is none.
+    """
+    try:
+        return MeetingSetModel.objects.get(
+            owner=user,
+            is_processed=False,
+        )
+    except MeetingSetModel.DoesNotExist:
+        return False
+
 def meeting_processing_health_check() -> None:
     """
-    Check if meeting processing is still happening. If there are stale
-    unprocessed meetings in the queue, send me an email so that I can fix.
+    Run as a cron to make sure all is well. Checks if any meetingsets at all
+    unprocessed; so run it in the middle of the night
     """
-    # TODO check
-    unhealthy = False  # all is good!
-    if unhealthy:
-        logger.critical('Meeting processing health check failed')
+    if ct := MeetingSetModel.objects.filter(is_processed=False).count():
+        logger.critical(
+            f'Overnight meeting processing health check failed. {ct} '
+            'MeetingSetModels are unprocessed'
+        )
 
-def user_has_pending_meeting(user) -> bool:
-    if MeetingSetModel.objects.filter(owner=user, is_processed=False):
-        return True
-    return False

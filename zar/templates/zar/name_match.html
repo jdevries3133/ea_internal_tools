@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+
+{% block title %}Match Names{% endblock %}
+
+{% block content %}
+
+<div style="max-width: 800px">
+  <h1>Manually match unmatched names</h1>
+  <p>
+    This script isn't perfect. Some names were not matched to a student's real
+    name. That means that those students will not appear in the final report.
+    For the most part, these names should be names that you cannot identify
+    either. They might be blank, be silly names, or be the names of your
+    colleagues who dropped into your meetings!
+  </p>
+  <p>
+    However, you might be able to provide matches for some of these. For
+    example, you can provide the student's name where you see the student's
+    parents name or a commonly used screen name. The nice thing about this
+    feature is that you are contributing to a database of shared knowledge
+    across user accounts. So, if someone before you has matched 
+    SuperFortniteZZZ" with "Timmy Smith," that match will be made
+    automatically for you; and if you contribute some matches, they might be
+    used to make an automatic match for someone else.
+  </p>
+  <p>
+    If you are not concerned with missing thse students on your final report,
+    skip this step and get your report now.
+  </p>
+  <button><a href={% url 'skip_name_match' %}>Skip name matching</button></a>
+
+  <h2>
+    Note that you may submit the form partially completed and the information
+    you provide will still be used!
+  </h2>
+</div>
+
+
+<style>
+  thead > tr >  td {
+    font-weight: bold;
+  }
+</style>
+
+
+<form action="{% url 'name_match' %}" method="POST">
+  {% csrf_token %}
+  <table>
+    <thead>
+      <tr height="30px">
+        <td>Zoom Name</td>
+        <td>Real Name</td>
+      </tr>
+    </thead>
+    <tbody>
+  {% for name in unidentifiable %}
+      <tr>
+        <td><label for={{ name }}>{{ name }}</label></td>
+        <td><input type="text" id={{ name }} name={{ name }}/></td>
+      </tr>
+  {% endfor %}
+    </tbody>
+  </table>
+  <input type="submit" value="Submit" />
+</form>
+
+
+{% endblock %}

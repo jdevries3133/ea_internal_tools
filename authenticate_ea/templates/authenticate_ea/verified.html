@@ -1,3 +1,5 @@
+{# TODO explicit calls to "url 'file_upload'" are NOT extensible #}
+
 {% extends 'base.html' %}
 
 {% block title %}Account Verified!{% endblock %}
@@ -10,6 +12,7 @@
     report aggregator tool in:
   </p>
   <h3 id="verified__countdown">5</h3>
+  <p><a href="{% url 'file_upload' %}">Go there now</a>
 
     <script>
       const countdown = document.getElementById('verified__countdown')

@@ -7,6 +7,12 @@
 <div>
   <h1>Report is Processing</h1>
 
+  <h3>Made a mistake?</h3>
+  <form action={% url 'monitor_progress' %} method="POST">
+    {% csrf_token %}
+    <input type="submit" value="Cancel Meeting" />
+  </form>
+
 
   {% if len_queue != 0 %}
 
@@ -28,18 +34,18 @@
 
     <h2>Your report is being processed now!</h2>
     <h3>Meetings processed:</h3>
-    <h1>{{ len_queue }}</h1>
-    <ul>
+    <h1>{{ processed_meeting_names|length }}</h1>
+    <ul style="margin-bottom: 10rem;">
       {% for meet in processed_meeting_names %}
         <li>{{ meet }}</li>
       {% endfor %}
     </ul>
 
   <script>
-    // refresh every 1 second
+    // refresh every 2 seconds
     setTimeout(() => {
       location.replace(window.location)
-    }, 1000)
+    }, 2000)
   </script>
 
   {% endif %}
