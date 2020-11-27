@@ -52,3 +52,17 @@ def meeting_processing_health_check() -> None:
             'MeetingSetModels are unprocessed'
         )
 
+class WipMeetingSetNotFound(Exception):
+    pass
+
+def get_wip_meeting_set_model(*, user) -> MeetingSetModel:
+    try:
+        return MeetingSetModel.objects.get(
+            owner=user,
+            is_processed=False,
+        )
+    except (
+        MeetingSetModel.DoesNotExist,
+        MeetingSetModel.MultipleObjectsReturned
+    ) as e:
+        raise WipMeetingSetNotFound

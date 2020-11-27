@@ -4,8 +4,11 @@ from django.contrib.auth import get_user_model
 from django_mysql.models import JSONField
 
 class UnknownZoomName(models.Model):
-    zoom_name = models.CharField(max_length=50, unique=True, null=False)
+    zoom_name = models.CharField(max_length=50, null=False)
     real_name = models.CharField(max_length=50, null=False)
+
+    def __str__(self):
+        return f'{self.zoom_name} => {self.real_name}'
 
 class MeetingCompletedReport(models.Model):
     """
@@ -46,3 +49,13 @@ class RawMeetingData(models.Model):
         on_delete=models.CASCADE,
         related_name='data'
     )
+
+    def __str__(self):
+        try:
+            return (
+                self.data.split('\n')[1].split(',')[1]  # topic
+                + ' at '
+                + self.data.split('\n')[1].split(',')[2]  # datetime
+            )
+        except:
+            return super().__str__()

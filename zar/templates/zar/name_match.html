@@ -55,8 +55,8 @@
     <tbody>
   {% for name in unidentifiable %}
       <tr>
-        <td><label for={{ name }}>{{ name }}</label></td>
-        <td><input type="text" id={{ name }} name={{ name }}/></td>
+        <td><label for={{ "zoomname__"|add:name }}>{{ name }}</label></td>
+        <td><input type="text" id={{ "zoomname__"|add:name }} name={{ "zoomname__"|add:name }}/></td>
       </tr>
   {% endfor %}
     </tbody>

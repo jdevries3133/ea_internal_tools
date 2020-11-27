@@ -187,9 +187,9 @@ LOGGING = {
             'handlers': ['console'],
             'level': 'ERROR',
         },
-        'teacherHelper.zoom_attendance_reporter': {
+        'teacherHelper.zoom_attendance_report': {
             'handlers': ['console'],
-            'level': 'INFO',
+            'level': 'INFO'
         },
         'django': {
             'handlers': ['console'],

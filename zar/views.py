@@ -23,9 +23,19 @@ from django.contrib import messages
 from django.utils.translation import gettext as _
 from teacherHelper.zoom_attendance_report import MeetingSet
 
-from .models import MeetingSetModel, UnknownZoomName
-from .services import queue_meeting_set, process_matched_names
-from .selectors_ import meeting_processing_update, user_has_pending_meeting
+from .models import MeetingSetModel
+from .services import (
+    queue_meeting_set,
+    process_matched_names,
+    repair_broken_state,
+)
+from .selectors_ import (
+    meeting_processing_update,
+    user_has_pending_meeting,
+    get_wip_meeting_set_model,
+    WipMeetingSetNotFound,
+)
+
 
 logger = logging.getLogger(__name__)
 
@@ -75,50 +85,47 @@ def monitor_progress(request):
     """
     Provide progress reports on very slow MeetingSet.process() method.
     """
-    if (
-        request.method == 'POST'
-    ) and (
-        meeting_set_model := user_has_pending_meeting(user=request.user)
-    ):
+    try:
+        wip = get_wip_meeting_set_model(user=request.user)
+        request.session['wip_ms'] = wip.pk
+    except WipMeetingSetNotFound:
+        if pk := request.session.get('wip_ms'):
+            wip = MeetingSetModel.objects.get(pk=pk)
+        else:
+            repair_broken_state(user=request.user)
+            messages.add_message(
+                request,
+                messages.ERROR,
+                'Something went wrong, please try again.'
+            )
+            logger.error('Report processing abandoned. Something went wrong')
+            return redirect('file_upload')
+
+    if request.method == 'POST':
         logger.info('User cancelled meetingset processing')
         messages.add_message(
             request,
             messages.INFO,
             'Meeting has been cancelled.'
         )
-        meeting_set_model.delete()
+        wip.delete()
         return redirect('file_upload')
 
-    # fetch work-in-progress meetingset
-    try:
-        wip = MeetingSetModel.objects.get(
-            owner=request.user,
-            is_processed=False,
-        )
-    except (
-        MeetingSetModel.DoesNotExist,
-        MeetingSetModel.MultipleObjectsReturned
-    ):
-        if MeetingSetModel.objects.filter(
-            owner=request.user,
-            is_processed=True,
-            needs_name_matching=True,
-        ):
-            logger.debug('Ready for name matching')
+    if wip.is_processed:
+        # processing is done!
+        if wip.needs_name_matching:
+            logger.debug(
+                'wip meeting_set_model is processed and needs names matched. '
+                'Redirecting...'
+            )
             return redirect('name_match')
-        if request.session.get('name_matching_completed'):
-            return redirect('download_previous_reports')
-        logger.debug('Work-in-progress meetingset does not exist')
-        return redirect('no_active_meeting_decision_fork')
 
-    if wip.needs_name_matching and wip.is_processed:
         logger.debug(
-            'wip meeting_set_model is processed and needs names matched. '
-            'Redirecting...'
+            'Name matching has been completed already; user is being '
+            'redirected to download their report.'
         )
-        return redirect('name_match')
+        return redirect('download_previous_reports')
 
-    request.session['is_processing'] = True
     return render(
         request,
         'zar/waiting_for_processing.html',
@@ -129,11 +136,15 @@ def name_match(request):
     """
     User matches whacky zoom names with real names if they can.
     """
+    # fetch the model meeting_set_model in progress that hasn't gone through
+    # name matching yet.
     need_matching = MeetingSetModel.objects.filter(
         owner=request.user,
         is_processed=True,
         needs_name_matching=True,
     )
+
+    # redirect to decision fork if there is no current meetingset
     if not need_matching:
         logger.debug(
             'User tried to reach name_match view but has no meetings that need '
@@ -141,32 +152,47 @@ def name_match(request):
         )
         return redirect('no_active_meeting_decision_fork')
 
+    # Proceed to name matching
     logger.debug(
         f'Proceeding to match missing names for {len(need_matching)} '
         'meeting_set_models'
     )
 
     if request.method == 'POST':
+        process_matched_names(
+            data=request.POST,
+        )
+
+        # Update MeetingSetModel state to re-trigger processing with new matches
         meeting_set_model = MeetingSetModel.objects.get(
             owner=request.user,
             is_processed=True,
             needs_name_matching=True
         )
-        process_matched_names(
-            data=request.POST,
-        )
         meeting_set_model.needs_name_matching = False
         meeting_set_model.is_processed = False  # queue for re-processing
-        request.session['name_matching_completed'] = True
+        meeting_set_model.save()
+
+        messages.add_message(
+            request,
+            messages.INFO,
+            'Re-processing report data with user provided name-matches.'
+        )
         return redirect('monitor_progress')
+
+    # TODO: figure out why all_unidentifiable doesn't seem to change after manual name matching
     all_unidentifiable = set()
-    request.session['all_unidentifiable'] = all_unidentifiable
-    for meeting_set_model in need_matching:
+    for meeting_set_model in need_matching:  # efficiency could be improved...
         all_unidentifiable.update(
             MeetingSet.deserialize(
                 meeting_set_model.json
             ).all_unidentifiable
         )
+    all_unidentifiable = list(all_unidentifiable)
+    logger.debug(
+        'Asking user to match unmatched names: %(unid)s',
+                                               {'unid': all_unidentifiable}
+    )
     return render(request, 'zar/name_match.html', context={
         'unidentifiable': all_unidentifiable
     })
@@ -186,6 +212,7 @@ def download_previous_reports(request):
     """
     Re-download reports previously generated.
     """
+    del request.session['wip_ms']
     return render(request, 'zar/download_previous_report.html')
 
 def no_active_meeting_decision_fork(request):
@@ -193,9 +220,4 @@ def no_active_meeting_decision_fork(request):
     If the user tries to access a report processing flow page when they
     have no pending reports, they will be redirected here
     """
-    if request.session.get('is_processing'):
-        logger.error(
-            'User was redirected to decision fork even though they were in the '
-            'middle of processing a meeting_set'
-        )
     return render(request,'zar/no_active_meeting_decision_fork.html')

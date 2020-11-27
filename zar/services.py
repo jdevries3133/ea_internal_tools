@@ -1,6 +1,8 @@
+import string
 import logging
 from typing import List
 
+from django.db.models import Q
 from teacherHelper.zoom_attendance_report import MeetingSet
 
 from .models import MeetingCompletedReport, MeetingSetModel, RawMeetingData, UnknownZoomName
@@ -12,7 +14,8 @@ def queue_meeting_set(*,
                      user) -> None:
     """
     Save raw data, and create an empty MeetingSetModel to signal to the
-    worker that it has a MeetingSet to process.
+    worker that it has a MeetingSet to process. Filter all non-ascii
+    characters.
     """
     if MeetingSetModel.objects.filter(owner=user, is_processed=False):
         raise Exception(
@@ -20,12 +23,15 @@ def queue_meeting_set(*,
             'a MeetingSet in progress.'
         )
     meeting_set_model = MeetingSetModel.objects.create(owner=user)
-    RawMeetingData.objects.bulk_create([
-        RawMeetingData(
+    data_models = []
+    for f in data:
+        raw = str(f.read(), 'utf-8-sig')
+        processed = ''.join(filter(lambda c: c in string.printable, raw))
+        data_models.append(RawMeetingData(
             meeting_set_model=meeting_set_model,
-            data=str(f.read(), 'utf-8-sig'),
-        ) for f in data
-    ])
+            data=processed,
+        ))
+    RawMeetingData.objects.bulk_create(data_models)
 
 def process_meeting_set(*,
                         meeting_set_model: MeetingSetModel,
@@ -34,8 +40,15 @@ def process_meeting_set(*,
     Take an unprocessed MeetingSet and process it! Will be run by a worker
     separate from the web application.
     """
-    # initialize MeetingSet
-    meeting_set = MeetingSet(data)
+    # initialize MeetingSet with all previously provided user matches
+    known_matches = {
+        m.zoom_name : m.real_name for m in UnknownZoomName.objects.all()
+    }
+    meeting_set = MeetingSet(data, known_matches=known_matches)
+    logger.debug(
+        'Initialized MeetingSet with the followign known matches: %(km)s',
+        {'km': known_matches}
+    )
 
     # process all data, create progress reports during processing.
     for meeting in meeting_set.process():
@@ -45,6 +58,7 @@ def process_meeting_set(*,
             meeting_set_model=meeting_set_model,
         )
         logger.debug(f'Processed {report}. MeetingCompletedReport created.')
+
 
     # update meeting_set_model now that processing is finished.
     meeting_set_model.json = meeting_set.get_serializable_data()
@@ -57,38 +71,45 @@ def process_meeting_set(*,
         meeting_set_model=meeting_set_model
     ).delete()
 
-def apply_user_manual_name_matches(*,
-                                   meeting_set_model: MeetingSetModel,
-                                   matches: tuple):
-    """
-    Add user matches to known matches and run processing again.
-    """
-    data = RawMeetingData.objects.filter(meeting_set_model=meeting_set_model)
-
-
-def process_matched_names(*, data: dict) -> dict:
+def process_matched_names(*, data: dict) -> None:
     """
     Process form data from the frontend after the user matches zoom names
     with real names.
     """
-    provided_name_pairs = {}
-    for zoom_name, true_name in data.items():
-        # fix weird slash appended to some names
-        if zoom_name[-1] == '/':
-            zoom_name = zoom_name[:-1]
-
-        if isinstance(true_name, list):
-            provided_name_pairs.setdefault(
-                zoom_name,
-                true_name[0],
-            )
-
     uzm_objs = []
-    for k, v in provided_name_pairs:
+    for zoom_name, real_name in data.items():
+        if not zoom_name.startswith('zoomname__'):
+            continue
+        if not real_name:
+            continue
+        zoom_name = zoom_name.rstrip('/').lstrip('zoomname__')
         uzm_objs.append(UnknownZoomName(
-            zoom_name=k,
-            real_name=v,
+            zoom_name=zoom_name,
+            real_name=real_name,
         ))
+    logger.debug(
+        'Creating UnknownZoomName mappings: %(uzm)s',
+        {'uzm': uzm_objs}
+    )
+    created = UnknownZoomName.objects.bulk_create(
+        uzm_objs,
+        ignore_conflicts=True
+    )
+    logger.debug(
+        'Created the following after ignoring conflicts: %(cr)s',
+        {'cr': created}
+    )
 
-    UnknownZoomName.objects.bulk_create(uzm_objs)
-    return provided_name_pairs
+def repair_broken_state(*, user) -> None:
+    """
+    Call this when an attempt to select the single wip report fails. This
+    means something went wrong and the state of the user's models is broken.
+    We need to reset and try again.
+    """
+    MeetingSetModel.objects.filter(
+        Q(owner=user),
+        Q(needs_name_matching=True) | Q(is_processed=False)
+    ).update(
+        needs_name_matching=False,
+        is_processed=True,
+    )
