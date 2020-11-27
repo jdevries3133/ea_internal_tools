@@ -1,3 +1,4 @@
+from datetime import date, timedelta
 import logging
 from smtplib import SMTPException
 
@@ -84,3 +85,17 @@ def assign_user_role_from_slug(*, slug: str) -> User:
         user.save()
     return user
 
+def delete_email_tokens(*, user) -> None:
+    """
+    Delete all validation tokens issued to the user.
+    """
+    EmailConfirmationToken.objects.filter(owner=user).delete()
+
+def prune_email_tokens() -> None:
+    """
+    Run as a daily cron job. Delte email tokens that are more than five days
+    old.
+    """
+    EmailConfirmationToken.objects.filter(created__lt=(
+        date.today() - timedelta(days=5)
+    )).delte()
