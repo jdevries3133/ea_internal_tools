@@ -243,7 +243,8 @@ def download_previous_reports(request):
     """
     Re-download reports previously generated.
     """
-    del request.session['wip_ms']
+    if 'wip_ms' in request.session:
+        del request.session['wip_ms']
     return render(request, 'zar/download_previous_report.html')
 
 def no_active_meeting_decision_fork(request):

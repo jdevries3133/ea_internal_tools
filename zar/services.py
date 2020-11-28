@@ -63,7 +63,6 @@ def process_meeting_set(*,
     # update meeting_set_model now that processing is finished.
     meeting_set_model.json = meeting_set.get_serializable_data()
     meeting_set_model.is_processed = True
-    meeting_set_model.needs_name_matching = True
     meeting_set_model.save()
 
     # cleanup; delete reports now that processing is done
