@@ -23,10 +23,9 @@ from django.contrib import messages
 from django.utils.translation import gettext as _
 from teacherHelper.zoom_attendance_report import MeetingSet
 
-from .models import MeetingSetModel
+from .models import MeetingSetModel, UnknownZoomName
 from .services import (
     queue_meeting_set,
-    process_matched_names,
     repair_broken_state,
 )
 from .selectors_ import (
@@ -136,6 +135,24 @@ def name_match(request):
     """
     User matches whacky zoom names with real names if they can.
     """
+    class UnknownZoomNamesForm(forms.Form):
+        def __init__(self, *a, **kw):
+            self.zoom_names = kw.pop('zoom_names')
+            super().__init__(*a, **kw)
+            for name in self.zoom_names:
+                self.fields[name] = forms.CharField(required=False)
+
+        def save(self):
+            uzm_objs = []
+            for name in self.zoom_names:
+                user_data = self.cleaned_data.get(name)
+                if user_data:
+                    uzm_objs.append(UnknownZoomName(
+                        zoom_name=name,
+                        real_name=user_data
+                    ))
+            UnknownZoomName.objects.bulk_create(uzm_objs)
+
     # fetch the model meeting_set_model in progress that hasn't gone through
     # name matching yet.
     need_matching = MeetingSetModel.objects.filter(
@@ -159,28 +176,39 @@ def name_match(request):
     )
 
     if request.method == 'POST':
-        process_matched_names(
-            data=request.POST,
+        form = UnknownZoomNamesForm(
+            request.POST,
+            zoom_names=request.session.get('unidentifiable')
         )
+        if form.is_valid():
+            form.save()
 
-        # Update MeetingSetModel state to re-trigger processing with new matches
-        meeting_set_model = MeetingSetModel.objects.get(
-            owner=request.user,
-            is_processed=True,
-            needs_name_matching=True
-        )
-        meeting_set_model.needs_name_matching = False
-        meeting_set_model.is_processed = False  # queue for re-processing
-        meeting_set_model.save()
+            # Update MeetingSetModel state to re-trigger processing with new
+            # matches
+            MeetingSetModel.objects.filter(
+                owner=request.user,
+                is_processed=True,
+                needs_name_matching=True
+            ).update(
+                needs_name_matching=False,
+                is_processed=False,  # queue for re-processing
+            )
 
-        messages.add_message(
-            request,
-            messages.INFO,
-            'Re-processing report data with user provided name-matches.'
-        )
-        return redirect('monitor_progress')
+            # tell the user why they're not being redirected back to progress
+            # monitoring.
+            messages.add_message(
+                request,
+                messages.INFO,
+                'Re-processing report data with user provided name-matches.'
+            )
+            return redirect('monitor_progress')
+        else:
+            # this form will never not be valid because it's all optional
+            # charfields, but nonetheless...
+            return render(request, 'zar/name_match.html', {'form': form})
 
-    # TODO: figure out why all_unidentifiable doesn't seem to change after manual name matching
+    # compile a list of unknown zoom names from the need_matching queryset
+    # fetched earlier.
     all_unidentifiable = set()
     for meeting_set_model in need_matching:  # efficiency could be improved...
         all_unidentifiable.update(
@@ -193,9 +221,12 @@ def name_match(request):
         'Asking user to match unmatched names: %(unid)s',
                                                {'unid': all_unidentifiable}
     )
-    return render(request, 'zar/name_match.html', context={
-        'unidentifiable': all_unidentifiable
-    })
+
+    # init form
+    request.session['unidentifiable'] = all_unidentifiable
+    form = UnknownZoomNamesForm(zoom_names=all_unidentifiable)
+
+    return render(request, 'zar/name_match.html', {'form': form})
 
 def skip_name_match(request):
     """

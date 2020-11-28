@@ -71,35 +71,6 @@ def process_meeting_set(*,
         meeting_set_model=meeting_set_model
     ).delete()
 
-def process_matched_names(*, data: dict) -> None:
-    """
-    Process form data from the frontend after the user matches zoom names
-    with real names.
-    """
-    uzm_objs = []
-    for zoom_name, real_name in data.items():
-        if not zoom_name.startswith('zoomname__'):
-            continue
-        if not real_name:
-            continue
-        zoom_name = zoom_name.rstrip('/').lstrip('zoomname__')
-        uzm_objs.append(UnknownZoomName(
-            zoom_name=zoom_name,
-            real_name=real_name,
-        ))
-    logger.debug(
-        'Creating UnknownZoomName mappings: %(uzm)s',
-        {'uzm': uzm_objs}
-    )
-    created = UnknownZoomName.objects.bulk_create(
-        uzm_objs,
-        ignore_conflicts=True
-    )
-    logger.debug(
-        'Created the following after ignoring conflicts: %(cr)s',
-        {'cr': created}
-    )
-
 def repair_broken_state(*, user) -> None:
     """
     Call this when an attempt to select the single wip report fails. This

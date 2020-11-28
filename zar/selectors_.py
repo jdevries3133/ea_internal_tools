@@ -64,5 +64,5 @@ def get_wip_meeting_set_model(*, user) -> MeetingSetModel:
     except (
         MeetingSetModel.DoesNotExist,
         MeetingSetModel.MultipleObjectsReturned
-    ) as e:
+    ):
         raise WipMeetingSetNotFound

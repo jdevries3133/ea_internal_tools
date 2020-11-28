@@ -53,10 +53,10 @@
       </tr>
     </thead>
     <tbody>
-  {% for name in unidentifiable %}
+  {% for field in form %}
       <tr>
-        <td><label for={{ "zoomname__"|add:name }}>{{ name }}</label></td>
-        <td><input type="text" id={{ "zoomname__"|add:name }} name={{ "zoomname__"|add:name }}/></td>
+        <td>{{ field.label }}</td>
+        <td>{{ field }}</td>
       </tr>
   {% endfor %}
     </tbody>
