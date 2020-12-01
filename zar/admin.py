@@ -5,6 +5,7 @@ from .models import (
     MeetingCompletedReport,
     MeetingSetModel,
     RawMeetingData,
+    Report,
 )
 
 # Register your models here.
@@ -12,3 +13,4 @@ admin.site.register(UnknownZoomName)
 admin.site.register(MeetingCompletedReport)
 admin.site.register(MeetingSetModel)
 admin.site.register(RawMeetingData)
+admin.site.register(Report)

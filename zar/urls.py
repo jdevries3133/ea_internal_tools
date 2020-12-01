@@ -5,6 +5,7 @@ from .views import (
     name_match,
     monitor_progress,
     download_previous_reports,
+    download_direct,
     skip_name_match,
     no_active_meeting_decision_fork,
 )
@@ -23,5 +24,10 @@ urlpatterns = [
         no_active_meeting_decision_fork,
         name='no_active_meeting_decision_fork'
     ),
-    path('snm/', skip_name_match, name='skip_name_match')
+    path('snm/', skip_name_match, name='skip_name_match'),
+    path(
+        'report-download-direct/<int:pk>/',
+        download_direct,
+        name='download_direct'
+    ),
 ]

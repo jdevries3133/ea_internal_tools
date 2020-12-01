@@ -6,5 +6,18 @@
 
 <h1>Download Your Reports</h1>
 
+<p>Click on the report below to download it:</p>
+
+
+<ul>
+  {% for report in user_reports %}
+  <p>
+  <a href="{% url 'download_direct' pk=report.pk %}"
+      >Report generated on {{ report.created }}</a>
+  </p>
+  {% endfor %}
+</ul>
+
+
 {% endblock %}
 

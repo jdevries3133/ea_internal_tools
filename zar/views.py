@@ -15,7 +15,7 @@ no_active_meeting_decision_fork
 
 import logging
 
-from django.http import JsonResponse, HttpResponse
+from django.http import HttpResponse
 from django.shortcuts import render, redirect
 from django import forms
 from django.core.exceptions import ValidationError
@@ -23,10 +23,11 @@ from django.contrib import messages
 from django.utils.translation import gettext as _
 from teacherHelper.zoom_attendance_report import MeetingSet
 
-from .models import MeetingSetModel, UnknownZoomName
+from .models import MeetingSetModel, UnknownZoomName, Report
 from .services import (
     queue_meeting_set,
     repair_broken_state,
+    generate_excel_report
 )
 from .selectors_ import (
     meeting_processing_update,
@@ -88,17 +89,15 @@ def monitor_progress(request):
         wip = get_wip_meeting_set_model(user=request.user)
         request.session['wip_ms'] = wip.pk
     except WipMeetingSetNotFound:
+        # try to recover with session storage, or gracefully reset.
         if pk := request.session.get('wip_ms'):
-            wip = MeetingSetModel.objects.get(pk=pk)
+            wips = MeetingSetModel.objects.filter(pk=pk)
+            if wips and len(wips) == 1:
+                wip = wips[0]
+            else:
+                return repair_broken_state(request=request, user=request.user)
         else:
-            repair_broken_state(user=request.user)
-            messages.add_message(
-                request,
-                messages.ERROR,
-                'Something went wrong, please try again.'
-            )
-            logger.error('Report processing abandoned. Something went wrong')
-            return redirect('file_upload')
+            return repair_broken_state(request=request, user=request.user)
 
     if request.method == 'POST':
         logger.info('User cancelled meetingset processing')
@@ -244,8 +243,38 @@ def download_previous_reports(request):
     Re-download reports previously generated.
     """
     if 'wip_ms' in request.session:
+        generate_excel_report(request.session['wip_ms'])
         del request.session['wip_ms']
-    return render(request, 'zar/download_previous_report.html')
+    user_reports = Report.objects.filter(
+        owner=request.user,
+    ).order_by('created')
+    if not user_reports:
+        messages.add_message(
+            request,
+            messages.INFO,
+            'You haven\'t made any reports yet! To make a report, upload your '
+            'zoom attendance reports here.'
+        )
+        return redirect('file_upload')
+    return render(
+        request,
+        'zar/download_previous_report.html',
+        {'user_reports': user_reports},
+    )
+
+def download_direct(request, pk: int):
+    """
+    View the user hits to simply download the report they clicked on. Initiate
+    the download and then redirect them back to the view above.
+    """
+    report = Report.objects.get(pk=pk)
+    filename = report.report.name.split('/')[-1]
+    response = HttpResponse(report.report, content_type=(
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    ))
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
+
 
 def no_active_meeting_decision_fork(request):
     """

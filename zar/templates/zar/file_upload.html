@@ -4,7 +4,8 @@
 
 {% block content %}
 
-<div>
+
+<div style="max-width: 800px">
   <h1>Upload your Zoom Attendance Reports</h1>
   <a 
     href="https://blogs.otago.ac.nz/zoom/zoom-host-tips/how-to-access-zoom-usage-reports/"
@@ -25,7 +26,7 @@
   </div>
   <hr />
   <h3>Upload your CSV Files here:</h3>
-  <p>You must upload them all at once.</p>
+  <p style="color: green">You must upload them all at once.</p>
   <p>First download them all, then upload them all in one shot.</p>
   <br />
   <form action="{{ request.path }}" method="post" enctype="multipart/form-data">
@@ -33,4 +34,5 @@
     {{ form.as_p }}
     <input type="submit" value="Submit">
   </form>
+</div>
 {% endblock %}

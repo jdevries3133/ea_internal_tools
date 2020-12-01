@@ -19,6 +19,10 @@
     <h3><a href="{% url 'logout' %}">Log Out</a></h3>
     <h3><a href="{% url 'register' %}">Make Account</a></h3>
     <h3><a href="{% url 'file_upload' %}">Make Your Report</a></h3>
+    <h3>
+      <a href="{% url 'download_previous_reports' %}"
+        >Download Previous Reports</a>
+    </h3>
     {% if messages %}
       <h2 style="color: blue;">Messages!</h2>
       <ul class="messages">
@@ -32,6 +36,8 @@
     {% endif %}
     <hr />
     <br />
-  {% block content %}{% endblock %}
+    <div style="margin-bottom: 50px">
+      {% block content %}{% endblock %}
+    </div>
   </body>
 </html>

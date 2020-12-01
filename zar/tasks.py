@@ -38,8 +38,8 @@ def _process_all_available():
                 data=[
                     m.data for m in RawMeetingData.objects.filter(
                         meeting_set_model=meeting_set_model,
-                    )
-                ],
+                    ).exclude(meeting_set_model__isnull=True)
+                ]
             )
     else:
         logger.debug('No meetings to process')

@@ -75,7 +75,7 @@ WSGI_APPLICATION = 'ea_django_webapps.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'songmaker',
+        'NAME': 'eatools',
         'USER': 'jack',
         'PASSWORD': os.getenv('LOCAL_MYSQL_PASS'),
         'HOST': 'localhost',
@@ -106,16 +106,7 @@ EMAIL_FROM = 'jdevries3133@gmail.com'  # temp
 
 AUTH_PASSWORD_VALIDATORS = [
     {
-        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
-    },
-    {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
-    },
-    {
-        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
 ]
 
@@ -156,6 +147,9 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+MEDIA_URL = '/media/'
 
 
 FORMATTERS = {

@@ -1,7 +1,10 @@
+import logging
+
 from django.db import models
 from django.contrib.auth import get_user_model
-
 from django_mysql.models import JSONField
+
+logger = logging.getLogger(__name__)
 
 class UnknownZoomName(models.Model):
     zoom_name = models.CharField(max_length=50, null=False)
@@ -43,10 +46,14 @@ class RawMeetingData(models.Model):
     """
     Straight from the csv file.
     """
+    class Meta:
+        verbose_name_plural = 'Raw meeting data'
+
     data = models.TextField()
     meeting_set_model = models.ForeignKey(
         'zar.MeetingSetModel',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True,
         related_name='data'
     )
 
@@ -57,5 +64,18 @@ class RawMeetingData(models.Model):
                 + ' at '
                 + self.data.split('\n')[1].split(',')[2]  # datetime
             )
-        except:
+        except Exception as e:
+            logger.error(
+                'RawMeetingData string method failed to do sloppy csv parsing. '
+                f'Exception {e} was thrown'
+            )
             return super().__str__()
+
+class Report(models.Model):
+    owner = models.ForeignKey(get_user_model(), on_delete=models.CASCADE)
+    meeting_set_model = models.ForeignKey(
+        'zar.MeetingSetModel',
+        on_delete=models.CASCADE,
+    )
+    report = models.FileField(upload_to='reports/')  # excel workbook
+    created = models.DateTimeField(auto_now=False, auto_now_add=True)
