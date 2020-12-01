@@ -4,8 +4,6 @@ Session.vim
 tags
 
 venv
-settings.development.py
-settings.production.py
 *.pyc
 __pycache__
 *.log*
