@@ -75,10 +75,10 @@ WSGI_APPLICATION = 'ea_django_webapps.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'eatools',
-        'USER': 'jack',
-        'PASSWORD': os.getenv('LOCAL_MYSQL_PASS'),
-        'HOST': 'localhost',
+        'NAME': os.getenv('MYSQL_DATABASE'),
+        'USER': os.getenv('MYSQL_USER'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
+        'HOST': 'db',
         'PORT': 3306,
         'OPTIONS': {
             'charset': 'utf8mb4',
