@@ -4,10 +4,18 @@ FROM python:3.8.3-alpine
 WORKDIR /src
 ENV PYTHONUNBUFFERED 1
 
+RUN apk add --update --no-cache \
+    g++ \
+    gcc \
+    libxml2-dev \
+    libxslt-dev \
+    mariadb-dev \
+    libxslt-dev
+
 # pip packages
 RUN pip install --upgrade pip
 COPY ./requirements.txt .
 RUN pip install -r requirements.txt
 
 COPY . .
-COMMAND ['python', 'manage.py', 'runserver', '0.0.0.0:8000']
+CMD ["sh", "web.entry.sh"]
