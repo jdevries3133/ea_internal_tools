@@ -19,7 +19,9 @@ SECRET_KEY = os.getenv('DJANGO_SECRET')
 
 DEBUG = bool(os.getenv('DJANGO_DEBUG'))
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    'localhost',
+]
 
 
 INSTALLED_APPS = [
@@ -75,10 +77,14 @@ WSGI_APPLICATION = 'ea_django_webapps.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('MYSQL_DATABASE'),
+        'NAME': (
+            os.getenv('MYSQL_DATABASE')
+            if os.getenv('MYSQL_DATABASE')
+            else 'eatools'
+        ),
         'USER': os.getenv('MYSQL_USER'),
         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-        'HOST': 'db',
+        'HOST': 'localhost',
         'PORT': 3306,
         'OPTIONS': {
             'charset': 'utf8mb4',
