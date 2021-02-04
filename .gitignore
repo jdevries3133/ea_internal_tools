@@ -13,3 +13,4 @@ db.sqlite3-journal
 */tests/private_sample_data/*
 media/*
 .env*
+sample_data
